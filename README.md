@@ -15,3 +15,6 @@ https://docs.microsoft.com/en-us/dotnet/core/install/linux-ubuntu
 - use tmux to run these concurrent:
   - (tab1) dotnet run
   - (tab2) butterystrava git:(master) curl -v -k https://localhost:5001/WeatherForecast
+- https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/linux-nginx?view=aspnetcore-3.1#configure-nginx
+- https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/proxy-load-balancer?view=aspnetcore-3.1
+
