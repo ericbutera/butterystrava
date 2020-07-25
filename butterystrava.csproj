@@ -1,8 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>db68f0db-6449-4266-9266-fc411d081769</UserSecretsId>
   </PropertyGroup>
-
-
+  <ItemGroup>
+    <PackageReference Include="Strava.NET" Version="3.4.4" />
+  </ItemGroup>
 </Project>

@@ -1,16 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace butterystrava
 {
@@ -31,6 +25,16 @@ namespace butterystrava
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
             });
+
+            // i dont like this one bit.
+            // tried user-secrets, but that's not encrypted
+            // tried finding other methods but it seems env vars are the best cross platform method
+            // not tied to "azure keys"
+            services.AddSingleton(typeof(StravaSettings), new StravaSettings {
+                ClientId = Environment.GetEnvironmentVariable("STRAVA_CLIENT_ID"),
+                ClientSecret = Environment.GetEnvironmentVariable("STRAVA_CLIENT_SECRET") 
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,6 +47,7 @@ namespace butterystrava
                 app.UseDeveloperExceptionPage();
             }
 
+            // figure out a better way to handle this for deployment. for now it's behind nginx and only ports 80/443 are open
             //app.UseHttpsRedirection();
 
             app.UseRouting();

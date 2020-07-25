@@ -1,0 +1,134 @@
+STEP 1: Get Authorization code
+
+Hit this in browser:
+https://www.strava.com/oauth/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&approval_prompt=force&scope={SCOPE}
+CLIENT_ID 		XXXXX 
+					(from api settings https://www.strava.com/settings/api)
+redirect_uri 	https://ericbutera.com/buttery 
+					(from api settings "authorized callback domain" https://www.strava.com/settings/api)
+scope: 			activity:read_all,activity:write - needs more research. seems like only 1 can be active. read or write
+					(see https://developers.strava.com/docs/authentication/#details-about-requesting-access for more scope info)
+
+
+Will get a response back:
+http://localhost/?state=&code=efcef2fb1b7c49450589a14b0cf1d2006f342160&scope=read
+http://localhost/?state=&code=324dd39cb0410a6c25fe6faa1ee854880aae8bec&scope=read,activity:write,activity:read_all
+
+Notice thie "code" field. This is important.
+
+
+STEP 2: Get access/refresh token & expiration date
+POST https://www.strava.com/api/v3/oauth/token?client_id={CLIENT_ID}&client_secret={CLIENT_SECRET}&code={CODE}&grant_type=authorization_code
+
+CLIENT_ID 		XXXXX (from api settings https://www.strava.com/settings/api)
+CLIENT_SECRET 	sha1 value (from api settings https://www.strava.com/settings/api)
+CODE 			sha1 value (from response redirect in step 1)
+
+Refreshing Expired Access Tokens: If it has expired, request a new short-lived access token with the last received refresh token. 
+(https://developers.strava.com/docs/authentication/#details-about-requesting-access)
+
+Response:
+ {
+    "token_type": "Bearer",
+    "expires_at": 1595714880,
+    "expires_in": 21600,
+    "refresh_token": "{sha1}",
+    "access_token": "{sha1}",
+    "athlete": {
+        "id": int,
+        "username": "{username}",
+        "resource_state": 2,
+        "firstname": "",
+        "lastname": "",
+        "city": "",
+        "state": "",
+        "country": "",
+        "sex": "M",
+        "premium": true,
+        "summit": true,
+        "created_at": "2018-10-25T14:17:34Z",
+        "updated_at": "2020-07-25T13:03:32Z",
+        "badge_type_id": 1,
+        "profile_medium": "avatar/athlete/medium.png",
+        "profile": "avatar/athlete/large.png",
+        "friend": null,
+        "follower": null
+    }
+}
+
+
+GET https://www.strava.com/api/v3/athlete/activities
+Authorization: Bearer {ACCESS_TOKEN}
+[
+    {
+        "resource_state": 2,
+        "athlete": {
+            "id": some_id,
+            "resource_state": 1
+        },
+        "name": "Afternoon Ride",
+        "distance": 64933.1,
+        "moving_time": 11732,
+        "elapsed_time": 12068,
+        "total_elevation_gain": 388.0,
+        "type": "Ride",
+        "workout_type": null,
+        "id": some_id,
+        "external_id": "2020-07-24-16-32-10.fit",
+        "upload_id": some_id,
+        "start_date": "2020-07-24T20:32:10Z",
+        "start_date_local": "2020-07-24T16:32:10Z",
+        "timezone": "(GMT-05:00) America/Detroit",
+        "utc_offset": -14400.0,
+        "start_latlng": [
+            x,
+            y
+        ],
+        "end_latlng": [
+            x,
+            y
+        ],
+        "location_city": null,
+        "location_state": null,
+        "location_country": "",
+        "start_latitude": long,
+        "start_longitude": long,
+        "achievement_count": 27,
+        "kudos_count": 2,
+        "comment_count": 0,
+        "athlete_count": 1,
+        "photo_count": 0,
+        "map": {
+            "id": "some_id",
+            "summary_polyline": "...",
+            "resource_state": 2
+        },
+        "trainer": false,
+        "commute": false,
+        "manual": false,
+        "private": false,
+        "visibility": "everyone",
+        "flagged": false,
+        "gear_id": "some_id",
+        "from_accepted_tag": false,
+        "upload_id_str": "some_id",
+        "average_speed": 5.535,
+        "max_speed": 12.4,
+        "average_temp": 28,
+        "average_watts": 176.9,
+        "kilojoules": 2075.1,
+        "device_watts": false,
+        "has_heartrate": true,          <-- THIS
+        "average_heartrate": double,    <-- THIS
+        "max_heartrate": double,        <-- THIS
+        "heartrate_opt_out": false,     <-- THIS!
+        "display_hide_heartrate_option": true,
+        "elev_high": 295.2,
+        "elev_low": 178.0,
+        "pr_count": 15,
+        "total_photo_count": 0,
+        "has_kudoed": false,
+        "suffer_score": 284.0
+    },
+    ....
+]
