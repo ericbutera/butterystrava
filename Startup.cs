@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Net.Http;
 
 namespace butterystrava
 {
@@ -21,6 +22,8 @@ namespace butterystrava
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddMvc();
+
             services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -30,11 +33,17 @@ namespace butterystrava
             // tried user-secrets, but that's not encrypted
             // tried finding other methods but it seems env vars are the best cross platform method
             // not tied to "azure keys"
-            services.AddSingleton(typeof(StravaSettings), new StravaSettings {
+            var settings = new Strava.Settings {
                 ClientId = Environment.GetEnvironmentVariable("STRAVA_CLIENT_ID"),
                 ClientSecret = Environment.GetEnvironmentVariable("STRAVA_CLIENT_SECRET") 
-            });
+            };
+            services.AddSingleton(typeof(Strava.Settings), settings);
 
+            var client = new Strava.Client(settings);
+            services.AddSingleton(typeof(Strava.Client), client);
+
+            //services.AddDbContext<Models.ButteryContext>(options => options.UseSqlite(connectionstring));
+            services.AddDbContext<Models.ButteryContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,6 +66,7 @@ namespace butterystrava
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapControllerRoute(name:"default", pattern:"{controller=Home}/{action=Index}");
             });
         }
     }

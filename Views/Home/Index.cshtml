@@ -1,0 +1,28 @@
+@model butterystrava.Models.IndexModel
+
+<h1>Hello</h1>
+
+<!-- step 1 allow buttery to access account -->
+<a href="https://www.strava.com/oauth/authorize?client_id=@(Model.ClientId)&response_type=code&redirect_uri=@(Model.RedirectUri)&approval_prompt=force&scope=@(Model.Scope)">Authenticate</a>
+
+
+@if (Model.Account != null) {
+    <h1>Account</h1>
+
+    <div>ExpiresAt @(Model.Account.ExpiresAt)</div>
+    <div>DateExpiresAt @(Model.Account.DateExpiresAt)</div>
+    <div>ExpiresIn @(Model.Account.ExpiresIn)</div>
+    <div>DateExpiresIn @(Model.Account.DateExpiresIn)</div>
+    <div>AccountId @(Model.Account.AccountId)</div>
+    <div>Refresh Token @(Model.Account.RefreshToken)</div>
+    <div>Token @(Model.Account.Token)</div>
+    <div>Code @(Model.Account.Code)</div>
+
+    <ul>
+    <li><a href="@(Url.Action("gettoken", "Activity"))">Load token with code @(Model.Account.Code) (only hit 1 time)</a></li>
+    <li><a href="@(Url.Action("refreshtoken", "Activity"))">Refresh Token</a></li>
+    <li><a href="@(Url.Action("activities", "Activity"))">Activities</a></li>
+    <li><a href="@(Url.Action("athlete", "Activity"))">Athlete</a></li>
+    <li><a href="@(Url.Action("authorize", "Activity"))">Authorize</a></li>
+    </ul>
+}
