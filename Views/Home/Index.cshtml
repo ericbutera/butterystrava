@@ -2,13 +2,15 @@
 
 <h1>Hello</h1>
 
-<!-- step 1 allow buttery to access account -->
-<a href="https://www.strava.com/oauth/authorize?client_id=@(Model.ClientId)&response_type=code&redirect_uri=@(Model.RedirectUri)&approval_prompt=force&scope=@(Model.Scope)">Authenticate</a>
+<pre>@(Model.AuthorizationUrl)</pre>
+@if (Model.Account == null || string.IsNullOrWhiteSpace(Model.Account.Code)) {
+    // step 1 allow buttery to access account
+    <a href="@(Model.AuthorizationUrl)">Login with Strava</a>
+}
 
 
 @if (Model.Account != null) {
     <h1>Account</h1>
-
     <div>ExpiresAt @(Model.Account.ExpiresAt)</div>
     <div>DateExpiresAt @(Model.Account.DateExpiresAt)</div>
     <div>ExpiresIn @(Model.Account.ExpiresIn)</div>
@@ -19,10 +21,9 @@
     <div>Code @(Model.Account.Code)</div>
 
     <ul>
-    <li><a href="@(Url.Action("gettoken", "Activity"))">Load token with code @(Model.Account.Code) (only hit 1 time)</a></li>
-    <li><a href="@(Url.Action("refreshtoken", "Activity"))">Refresh Token</a></li>
-    <li><a href="@(Url.Action("activities", "Activity"))">Activities</a></li>
-    <li><a href="@(Url.Action("athlete", "Activity"))">Athlete</a></li>
-    <li><a href="@(Url.Action("authorize", "Activity"))">Authorize</a></li>
+        @if (string.IsNullOrEmpty(Model.Account.RefreshToken)) { <li><a href="@(Url.Action("authorization-code", "Activity"))">Load token with code @(Model.Account.Code) (only hit 1 time)</a></li> }
+        <li><a href="@(Url.Action("refresh-token", "Activity"))">Refresh Token</a></li>
+        <li><a href="@(Url.Action("activities", "Activity"))">Activities</a></li>
+        <li><a href="@(Url.Action("athlete", "Activity"))">Athlete</a></li>
     </ul>
 }

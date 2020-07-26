@@ -29,11 +29,9 @@ namespace butterystrava.Controllers
 
         [Route("authorization-code")]
         public dynamic AuthorizationCode() {
-            var result = _client.AuthorizationCode(_account.Code); // Strava.IToken
+            var result = _client.AuthorizationCode(_account.Code); 
 
             if (result.StatusCode == HttpStatusCode.OK && result.Data != null) {
-                //var token = new Buttery.Buttery.Token(result.Data);
-                //_buttery.Save(_account, token);
                 _buttery.Save(_account, result.Data);
 
                 return new {
@@ -47,10 +45,9 @@ namespace butterystrava.Controllers
         [Route("refresh-token")]
         public dynamic RefreshToken() {
             var token =_buttery.GetStravaToken(_account);
-            var result = _client.RefreshToken(token/*_account.RefreshToken*/);
+            var result = _client.RefreshToken(token);
 
             if (result.StatusCode == HttpStatusCode.OK) {
-                //var refreshToken = new Buttery.Buttery.Token(result.Data);
                 _buttery.Save(_account, token);
 
                 return new {
@@ -63,9 +60,8 @@ namespace butterystrava.Controllers
 
         [Route("athlete")]
         public dynamic Athlete() {
-            //Models.Account account
             var token = _buttery.GetStravaToken(_account);
-            var result = _client.Athlete(token/*_account*/);
+            var result = _client.Athlete(token);
 
             if (result.StatusCode == HttpStatusCode.OK) {
                 _buttery.Save(_account, token);
@@ -82,7 +78,7 @@ namespace butterystrava.Controllers
         public dynamic Activities()
         {
             var token = _buttery.GetStravaToken(_account);
-            var result = _client.Activities(token/*_account*/);
+            var result = _client.Activities(token);
 
             if (result.StatusCode == HttpStatusCode.OK) {
                 _buttery.Save(_account, token);

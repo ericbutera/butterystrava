@@ -36,9 +36,14 @@ namespace butterystrava.Strava {
                 [Authorize][Cancel]
 
             Step 2:
-            on click Accept, redirect back to redirect_uri (https://ericbutera.com/buttery/code)
+            on click Accept, redirect back to redirect_uri 
             read query string param `code`. Pass `code` into GetToken
             */
+        }
+
+        public string GetAuthUrl(string redirectUri, string scope="activity:read_all,activity:write")
+        {
+            return $"https://www.strava.com/oauth/authorize?client_id={_settings.ClientId}&response_type=code&redirect_uri={redirectUri}&approval_prompt=force&scope={scope}";
         }
 
         public IRestResponse<AuthorizationCode> AuthorizationCode(string code)
@@ -78,11 +83,11 @@ namespace butterystrava.Strava {
             */
         }
 
-        public IRestResponse<Athlete> Athlete(IToken token/*Models.Account account*/) {
+        public IRestResponse<Athlete> Athlete(IToken token) {
             // https://www.strava.com/api/v3/athlete
             var request = new RestRequest("athlete");
 
-            var result = Execute<Athlete>(token/*account*/, request);
+            var result = Execute<Athlete>(token, request);
 
             /* TODO err
             if (result.StatusCode == HttpStatusCode.OK) {
@@ -94,12 +99,12 @@ namespace butterystrava.Strava {
             return result;
         }
 
-        public IRestResponse<Activities> Activities(/*int before, int after, int page, int per_page Models.Account account*/ IToken token) 
+        public IRestResponse<Activities> Activities(/*int before, int after, int page, int per_page*/ IToken token) 
         {
             // before = epoch timestamp TODO make DateTime
             //https://developers.strava.com/playground/#/Activities/getLoggedInAthleteActivities
             var request = new RestRequest("athlete/activities", Method.GET);
-            return Execute<Activities>(token/*account*/, request);
+            return Execute<Activities>(token, request);
         }
 
         // Future:
@@ -108,18 +113,20 @@ namespace butterystrava.Strava {
 
         public bool Expired(IToken token) {
             //if (DateTime.Now >= token.DateExpiresAt) 
+            // is short-lived access token `expires_at` in past?
+            // is `expire_at` < current_time?
+            // yes: use token
+            // no:
+            // refresh
             // TODO
             return false;
         }
 
-        public IRestResponse<T> Execute<T>(IToken token/*Models.Account account*/, IRestRequest request) {
-            // Account is passed in for Token properties along with DateExpiresAt
-            // Decouple by only passing in a token dto
-            // How do we mark that token was updated?
+        public IRestResponse<T> Execute<T>(IToken token, IRestRequest request) {
             request.AddParameter("Authorization", $"Bearer {token.access_token}", ParameterType.HttpHeader);
 
             if (Expired(token)) 
-                RefreshToken(token/*account.RefreshToken*/);
+                RefreshToken(token);
 
             var response = _client.Execute<T>(request);
 
@@ -134,12 +141,6 @@ namespace butterystrava.Strava {
 
         /// Updates token by reference
         public IRestResponse<RefreshToken> RefreshToken(IToken token) {
-            // is short-lived access token `expires_at` in past?
-            // is `expire_at` < current_time?
-            // yes: use token
-            // no:
-            // refresh
-
             var request = new RestRequest("oauth/token", Method.POST);
             request.AddParameter("client_id", _settings.ClientId);
             request.AddParameter("client_secret", _settings.ClientSecret);
@@ -149,7 +150,6 @@ namespace butterystrava.Strava {
 
             if (response.Data != null) {
                 var refresh = response.Data;
-                /* account.DateRefreshed = DateTime.Now; account.Token = refresh.access_token; account.RefreshToken = refresh.refresh_token; account.ExpiresIn = refresh.expires_in; account.ExpiresAt = refresh.expires_at; */
                 token.access_token = refresh.access_token;
                 token.refresh_token = refresh.refresh_token;
                 token.expires_at = refresh.expires_at;

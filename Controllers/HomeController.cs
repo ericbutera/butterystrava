@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using butterystrava.Models;
 using System.Linq;
 using butterystrava.Strava;
+using Microsoft.Extensions.Configuration;
 
 namespace butterystrava.Controllers {
 
@@ -10,19 +11,21 @@ namespace butterystrava.Controllers {
         private readonly Settings _settings;
         private readonly Buttery.Buttery _buttery;
         private readonly Account _account;
+        private readonly Client _client;
+        private readonly string _redirectUri;
 
-        public HomeController(ButteryContext context, Strava.Settings settings) {
-            // todo move database into another controller. keep home static
+        public HomeController(ButteryContext context, Strava.Settings settings, Strava.Client client, IConfiguration config) {
             _settings = settings;
-
             _buttery = new Buttery.Buttery(context);
             _account = _buttery.GetAccount();
+            _client = client;
+            _redirectUri = config["StravaOauthRedirectUri"];
         }
 
         public IActionResult Index() {
             return View(new IndexModel() {
-                ClientId = _settings.ClientId,
-                Account = _account
+                Account = _account,
+                AuthorizationUrl = _client.GetAuthUrl(_redirectUri)
             });
         }
 

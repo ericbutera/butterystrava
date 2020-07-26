@@ -4,7 +4,7 @@ Hit this in browser:
 https://www.strava.com/oauth/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&approval_prompt=force&scope={SCOPE}
 CLIENT_ID 		XXXXX 
 					(from api settings https://www.strava.com/settings/api)
-redirect_uri 	https://ericbutera.com/buttery 
+redirect_uri 	https://example.com/code 
 					(from api settings "authorized callback domain" https://www.strava.com/settings/api)
 scope: 			activity:read_all,activity:write - needs more research. seems like only 1 can be active. read or write
 					(see https://developers.strava.com/docs/authentication/#details-about-requesting-access for more scope info)

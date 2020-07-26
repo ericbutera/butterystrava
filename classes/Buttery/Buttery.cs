@@ -31,23 +31,23 @@ namespace butterystrava.Buttery {
         }
 
         // TODO sessions
-        public Account GetAccount() => _context.Accounts.FirstOrDefault();
+        public Account GetAccount() {
+            var account = _context.Accounts.FirstOrDefault();
+            if (account == null) {
+                account = new Account(){ };
+                _context.Accounts.Add(account);
+                _context.SaveChanges();
+            }
+
+            return account;
+        }
 
         /// Save Token to Account
-        public bool Save(Account account, Strava.IToken token /*Token token*/) 
+        public bool Save(Account account, Strava.IToken token) 
         {
-            if (string.IsNullOrWhiteSpace(token.access_token/*token.AccessToken*/)) 
+            if (string.IsNullOrWhiteSpace(token.access_token)) 
                 throw new ArgumentException("AccessToken is required to save");
 
-            /*
-            account.DateRefreshed = DateTime.Now;
-            account.Token = token.AccessToken;
-            account.RefreshToken = token.RefreshToken;
-            account.DateExpiresAt = token.DateExpiresAt;
-            account.DateExpiresIn = token.DateExpiresIn;
-            //account.DateExpiresIn = (new DateTime()).AddSeconds(token.expires_in);
-            //account.DateExpiresAt = System.DateTimeOffset.FromUnixTimeSeconds(token.expires_at);
-            */
             Map(token, account);
             token.NeedsSave = false;
 
@@ -59,25 +59,7 @@ namespace butterystrava.Buttery {
             // attach if not connected
             //_context.Accounts.Update(account)
             // DateUpdated = DateTime.Now
-
             return _context.SaveChanges() > 0;
         }
-
-        /*public class Token {
-            public string Type {get;set;}
-            public DateTimeOffset DateExpiresAt {get;set;}
-            public DateTime DateExpiresIn {get;set;}
-            public string AccessToken {get;set;}
-            public string RefreshToken{get;set;}
-
-            // Map Strava Token, convert to real dates (not unix timestamps)
-            public Token(Strava.IToken token) {
-                //Type = token.token_type;
-                DateExpiresAt = System.DateTimeOffset.FromUnixTimeSeconds(token.expires_at);
-                DateExpiresIn = (new DateTime()).AddSeconds(token.expires_in);
-                AccessToken = token.access_token;
-                RefreshToken = token.refresh_token;
-            }
-        }*/
     }
 }
