@@ -41,6 +41,7 @@ namespace butterystrava.Strava {
             */
         }
 
+        // Step 1 authentication url. User will follow this and be redirected back with a code.
         public string GetAuthUrl(string redirectUri, string scope="activity:read_all,activity:write")
         {
             return $"https://www.strava.com/oauth/authorize?client_id={_settings.ClientId}&response_type=code&redirect_uri={redirectUri}&approval_prompt=force&scope={scope}";

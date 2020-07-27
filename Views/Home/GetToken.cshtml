@@ -1,0 +1,9 @@
+<div>
+    username: @ViewData["username"]
+</div>
+
+<div>
+    code: @ViewData["code"]
+</div>
+
+<a href="@(Url.Action("AuthorizationCode"))">Load token with code (only hit 1 time)</a>

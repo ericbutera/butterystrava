@@ -24,6 +24,16 @@ namespace butterystrava
             services.AddControllers();
             services.AddMvc();
 
+            //services.AddDistributedMemoryCache(); // is for cookie?
+            services.AddSession(options =>
+            {
+                options.Cookie.Name = ".buttery";
+                options.IdleTimeout = TimeSpan.FromSeconds(10);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
+
             services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -50,17 +60,19 @@ namespace butterystrava
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseForwardedHeaders();
+            app.UseSession();
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+            } else {
+                app.UsePathBase(Configuration["pathBase"]);
+                app.UseStaticFiles();
             }
 
             // figure out a better way to handle this for deployment. for now it's behind nginx and only ports 80/443 are open
             //app.UseHttpsRedirection();
-
             app.UseRouting();
-
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

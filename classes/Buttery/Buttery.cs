@@ -54,6 +54,15 @@ namespace butterystrava.Buttery {
             return _context.SaveChanges() > 0;
         }
 
+        public bool Save(Account account, Strava.Responses.AuthorizationCode authorization) {
+            // Authorization Code has athlete.{username, id} to capture
+            account.AthleteUsername = authorization.athlete.username;
+            account.AthleteId = authorization.athlete.id;
+            Map(authorization, account);
+
+            return _context.SaveChanges() > 0;
+        }
+
         public bool Save(Account account)
         {
             // attach if not connected

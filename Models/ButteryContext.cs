@@ -11,6 +11,7 @@ namespace butterystrava.Models {
     }
 
     public class Account {
+        // this should probably be normalized at some point
         public int AccountId {get;set;}
         public string Token {get;set;} // access_token
         public string RefreshToken {get;set;}
@@ -20,6 +21,8 @@ namespace butterystrava.Models {
         public int ExpiresIn {get;set;}
         public DateTime DateExpiresIn { get;set; }
         public DateTimeOffset DateExpiresAt {get;set; }
+        public string AthleteUsername { get; set; } // strava username
+        public long AthleteId { get; set; } // strava id
     }
 
 }

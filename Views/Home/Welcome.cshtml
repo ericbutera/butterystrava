@@ -1,0 +1,21 @@
+@model butterystrava.Models.IndexModel
+
+<h1>Hello - @(ViewData["username"])</h1>
+
+@if (Model.Account != null) {
+    <h1>Account</h1>
+    <div>ExpiresAt @(Model.Account.ExpiresAt)</div>
+    <div>DateExpiresAt @(Model.Account.DateExpiresAt)</div>
+    <div>ExpiresIn @(Model.Account.ExpiresIn)</div>
+    <div>DateExpiresIn @(Model.Account.DateExpiresIn)</div>
+    <div>AccountId @(Model.Account.AccountId)</div>
+    <div>Refresh Token @(Model.Account.RefreshToken)</div>
+    <div>Token @(Model.Account.Token)</div>
+    <div>Code @(Model.Account.Code)</div>
+
+    <ul>
+        <li><a href="@(Url.Action("refresh-token", "Activity"))">Refresh Token</a></li>
+        <li><a href="@(Url.Action("activities", "Activity"))">Activities</a></li>
+        <li><a href="@(Url.Action("athlete", "Activity"))">Athlete</a></li>
+    </ul>
+}
