@@ -23,6 +23,8 @@ namespace butterystrava.Models {
         public DateTimeOffset DateExpiresAt {get;set; }
         public string AthleteUsername { get; set; } // strava username
         public long AthleteId { get; set; } // strava id
+        public string Hash { get; set; }
+        public string Salt {get;set;}
     }
 
 }

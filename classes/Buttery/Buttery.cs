@@ -30,16 +30,24 @@ namespace butterystrava.Buttery {
             account.DateExpiresIn = (new DateTime()).AddSeconds(token.expires_in);
         }
 
-        // TODO sessions
-        public Account GetAccount() {
-            var account = _context.Accounts.FirstOrDefault();
+        public Account LoadOrCreate(string username) {
+            var account = _context.Accounts.FirstOrDefault(u => u.AthleteUsername == username);
+
             if (account == null) {
-                account = new Account(){ };
+                account = new Account(){ 
+                    AthleteUsername = username
+                };
                 _context.Accounts.Add(account);
+
                 _context.SaveChanges();
             }
-
+            
             return account;
+        }
+
+        public Account Load(string username) {
+            // account requried to exist
+            return _context.Accounts.FirstOrDefault(u => u.AthleteUsername == username);
         }
 
         /// Save Token to Account
@@ -50,15 +58,6 @@ namespace butterystrava.Buttery {
 
             Map(token, account);
             token.NeedsSave = false;
-
-            return _context.SaveChanges() > 0;
-        }
-
-        public bool Save(Account account, Strava.Responses.AuthorizationCode authorization) {
-            // Authorization Code has athlete.{username, id} to capture
-            account.AthleteUsername = authorization.athlete.username;
-            account.AthleteId = authorization.athlete.id;
-            Map(authorization, account);
 
             return _context.SaveChanges() > 0;
         }

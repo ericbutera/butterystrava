@@ -2,4 +2,20 @@
 
 <pre>@(ViewData["Model.AuthorizationUrl"])</pre>
 
+<h2>Login with Strava</h2>
 <a href="@(ViewData["AuthorizationUrl"])">Login with Strava</a>
+
+<h2>Login with buttery</h2>
+<form method="post" action="@(Url.Action("Authorize", "Home"))">
+    <div>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" />
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" />
+    </div>
+    <div>
+        <input type="submit" value="Login" />
+    </div>
+</form>

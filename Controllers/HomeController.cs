@@ -11,22 +11,21 @@ namespace butterystrava.Controllers {
 
         private readonly Settings _settings;
         private readonly Buttery.Buttery _buttery;
-        private readonly Account _account;
         private readonly Client _client;
         private readonly string _redirectUri;
+
+        private string _username => HttpContext.Session.GetString("username");
+        private string _code => HttpContext.Session.GetString("code");
 
         public HomeController(ButteryContext context, Strava.Settings settings, Strava.Client client, IConfiguration config) {
             _settings = settings;
             _buttery = new Buttery.Buttery(context);
-            _account = _buttery.GetAccount();
             _client = client;
             _redirectUri = config["StravaOauthRedirectUri"];
         }
 
         public RedirectToActionResult Index() {
-            var username = HttpContext.Session.GetString("username");
-
-            if (!string.IsNullOrWhiteSpace(username))
+            if (!string.IsNullOrWhiteSpace(_username))
                 return RedirectToAction("Welcome");
 
             return RedirectToAction("Login");
@@ -34,13 +33,50 @@ namespace butterystrava.Controllers {
 
         public IActionResult Login()
         {
+            if (!string.IsNullOrWhiteSpace(_username))
+                return RedirectToAction("Welcome");
+
             ViewData["AuthorizationUrl"] = _client.GetAuthUrl(_redirectUri);
             return View();
         }
 
-        public RedirectToActionResult SessionTest()
+        public RedirectToActionResult Logout() 
         {
+            HttpContext.Session.Remove("username");
             return RedirectToAction("Index");
+        }
+
+        public RedirectToActionResult Authorize(string username, string password) {
+            // refactor auth into something nicer
+            if (!string.IsNullOrWhiteSpace(username) && !string.IsNullOrWhiteSpace(password)) {
+                var account = _buttery.Load(username);
+                if (account == null) //"Account not found. Use Login with Strava"
+                    return RedirectToAction("Login");
+
+                var hash = new HashLibrary.HashedPassword(account.Hash, account.Salt);
+                if (hash.Check(password)) {
+                    // success
+                    HttpContext.Session.SetString("username", account.AthleteUsername);
+                    return RedirectToAction("Welcome");
+                } else {
+                    // "Error with username or password"
+                    return RedirectToAction("Login");
+                }
+            }
+
+            return RedirectToAction("Login");
+        }
+
+        public RedirectToActionResult Password(string password) {
+            var account = _buttery.Load(_username);
+
+            var hash = HashLibrary.HashedPassword.New(password);
+            account.Hash = hash.Hash;
+            account.Salt = hash.Salt;
+
+            _buttery.Save(account);
+
+            return RedirectToAction("Welcome");
         }
 
         public RedirectToActionResult Code(string code) {
@@ -49,27 +85,36 @@ namespace butterystrava.Controllers {
             // http://localhost:5001/home/code?state=&code={sha1}&scope=read,activity:write,activity:read_all
             
             HttpContext.Session.SetString("code", code);
+            // need to save code for later ?
+            //_account.Code = code;
+            //_buttery.Save(_account);
 
-            _account.Code = code;
-            _buttery.Save(_account);
 
             return RedirectToAction("GetToken");
         }
 
         public IActionResult GetToken() {
-            ViewData["username"] = HttpContext.Session.GetString("username");
-            ViewData["code"] = HttpContext.Session.GetString("code");
+            ViewData["username"] = _username;
+            ViewData["code"] = _code;
             return View();
         }
 
         public RedirectToActionResult AuthorizationCode() {
-            var result = _client.AuthorizationCode(_account.Code); 
+            var code = _code;
+
+            if (string.IsNullOrEmpty(code))
+                return RedirectToAction("Login");
+
+            var result = _client.AuthorizationCode(code); 
 
             var username = result.Data.athlete.username;
-
             HttpContext.Session.SetString("username", username);
-            _account.AthleteUsername = username;
-            _buttery.Save(_account);
+
+            var account = _buttery.LoadOrCreate(username);
+            account.Code = code;
+            account.AthleteUsername = _username;
+
+            _buttery.Save(account);
 
             return RedirectToAction("Welcome");
         }
@@ -82,8 +127,10 @@ namespace butterystrava.Controllers {
 
             ViewData["username"] = username;
 
+            var account = _buttery.Load(username);
+
             return View(new IndexModel() {
-                Account = _account,
+                Account = account,
             });
         }
     }

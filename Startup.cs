@@ -23,8 +23,8 @@ namespace butterystrava
         {
             services.AddControllers();
             services.AddMvc();
+            services.AddDistributedMemoryCache(); 
 
-            //services.AddDistributedMemoryCache(); // is for cookie?
             services.AddSession(options =>
             {
                 options.Cookie.Name = ".buttery";
