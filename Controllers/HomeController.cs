@@ -14,8 +14,25 @@ namespace butterystrava.Controllers {
         private readonly Client _client;
         private readonly string _redirectUri;
 
-        private string _username => HttpContext.Session.GetString("username");
-        private string _code => HttpContext.Session.GetString("code");
+        private string _username {
+            get {
+                return HttpContext.Session.GetString("username");
+            }
+            set {
+                if (value == null)
+                    HttpContext.Session.Remove("username");
+                else 
+                    HttpContext.Session.SetString("username", value);
+            }
+        }
+        private string _code {
+            get {
+                return HttpContext.Session.GetString("code");
+            }
+            set {
+                HttpContext.Session.SetString("code", value);
+            }
+        }
 
         public HomeController(ButteryContext context, Strava.Settings settings, Strava.Client client, IConfiguration config) {
             _settings = settings;
@@ -42,7 +59,7 @@ namespace butterystrava.Controllers {
 
         public RedirectToActionResult Logout() 
         {
-            HttpContext.Session.Remove("username");
+            _username = null;
             return RedirectToAction("Index");
         }
 
@@ -56,7 +73,7 @@ namespace butterystrava.Controllers {
                 var hash = new HashLibrary.HashedPassword(account.Hash, account.Salt);
                 if (hash.Check(password)) {
                     // success
-                    HttpContext.Session.SetString("username", account.AthleteUsername);
+                    _username = account.AthleteUsername;
                     return RedirectToAction("Welcome");
                 } else {
                     // "Error with username or password"
@@ -84,7 +101,7 @@ namespace butterystrava.Controllers {
             // step 2: use code to get auth token
             // http://localhost:5001/home/code?state=&code={sha1}&scope=read,activity:write,activity:read_all
             
-            HttpContext.Session.SetString("code", code);
+            _code = code;
             // need to save code for later ?
             //_account.Code = code;
             //_buttery.Save(_account);
@@ -108,7 +125,7 @@ namespace butterystrava.Controllers {
             var result = _client.AuthorizationCode(code); 
 
             var username = result.Data.athlete.username;
-            HttpContext.Session.SetString("username", username);
+            _username = username;
 
             var account = _buttery.LoadOrCreate(username);
             account.Code = code;
@@ -120,7 +137,7 @@ namespace butterystrava.Controllers {
         }
 
         public IActionResult Welcome() {
-            var username = HttpContext.Session.GetString("username");
+            var username = _username;
 
             if (string.IsNullOrWhiteSpace(username))
                 return RedirectToAction("Login");
