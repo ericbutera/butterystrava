@@ -127,6 +127,12 @@ namespace butterystrava.Controllers {
 
             ViewData["username"] = username;
 
+
+            var hash = HashLibrary.HashedPassword.New("moo");
+            ViewData["hash"] = hash.Hash;
+            ViewData["salt"] = hash.Salt;
+
+
             var account = _buttery.Load(username);
 
             return View(new IndexModel() {

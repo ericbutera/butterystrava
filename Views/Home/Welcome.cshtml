@@ -2,6 +2,9 @@
 
 <h1>Hello - @(ViewData["username"])</h1>
 
+<div>hash @(ViewData["hash"])</div>
+<div>salt @(ViewData["salt"])</div>
+
 @if (Model.Account != null) {
     <h1>Account</h1>
     <div>ExpiresAt @(Model.Account.ExpiresAt)</div>

@@ -92,6 +92,7 @@ namespace butterystrava.Controllers
                 };
             }
 
+            // "{\"message\":\"Authorization Error\",\"errors\":[{\"resource\":\"Athlete\",\"field\":\"access_token\",\"code\":\"invalid\"}]}"
             throw new ApiError() { StatusCode = result.StatusCode, ErrorMessage = result.ErrorMessage, Content = result.Content };
         }
 

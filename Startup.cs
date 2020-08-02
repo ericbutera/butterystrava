@@ -66,7 +66,10 @@ namespace butterystrava
             {
                 app.UseDeveloperExceptionPage();
             } else {
-                app.UsePathBase(Configuration["pathBase"]);
+                var path = Configuration["pathBase"];
+                if (!string.IsNullOrEmpty(path))
+                    app.UsePathBase(path);
+
                 app.UseStaticFiles();
             }
 
