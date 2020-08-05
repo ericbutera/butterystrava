@@ -1,9 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
-using butterystrava.Models;
-using System.Linq;
-using butterystrava.Strava;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication;
+using System.Threading.Tasks;
+
+using butterystrava.Buttery;
+using butterystrava.Models;
+using butterystrava.Strava;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace butterystrava.Controllers {
 
@@ -13,10 +18,16 @@ namespace butterystrava.Controllers {
         private readonly Buttery.Buttery _buttery;
         private readonly Client _client;
         private readonly string _redirectUri;
+        private readonly UserManager<User> _userManager;
+
+        private Task<User> GetCurrentUserAsync()
+        {
+            return _userManager.GetUserAsync(HttpContext.User);
+        }
 
         private string _username {
             get {
-                return HttpContext.Session.GetString("username");
+                return "TODO";//return HttpContext.Session.GetString("username");
             }
             set {
                 if (value == null)
@@ -34,23 +45,28 @@ namespace butterystrava.Controllers {
             }
         }
 
-        public HomeController(ButteryContext context, Strava.Settings settings, Strava.Client client, IConfiguration config) {
+        public HomeController(ButteryContext context, Strava.Settings settings, Strava.Client client, IConfiguration config,
+        UserManager<User> userManager
+        ) {
             _settings = settings;
             _buttery = new Buttery.Buttery(context);
             _client = client;
             _redirectUri = config["StravaOauthRedirectUri"];
+            _userManager = userManager;
         }
 
-        public RedirectToActionResult Index() {
-            if (!string.IsNullOrWhiteSpace(_username))
+        public async Task<RedirectToActionResult> Index() {
+            var user = await GetCurrentUserAsync();
+            if (user != null)
                 return RedirectToAction("Welcome");
 
             return RedirectToAction("Login");
         }
 
-        public IActionResult Login()
+        public async Task<IActionResult> Login()
         {
-            if (!string.IsNullOrWhiteSpace(_username))
+            var user = await GetCurrentUserAsync();
+            if (user != null)
                 return RedirectToAction("Welcome");
 
             ViewData["AuthorizationUrl"] = _client.GetAuthUrl(_redirectUri);
@@ -63,7 +79,7 @@ namespace butterystrava.Controllers {
             return RedirectToAction("Index");
         }
 
-        public RedirectToActionResult Authorize(string username, string password) {
+        /*public RedirectToActionResult Authorize(string username, string password) {
             // refactor auth into something nicer
             if (!string.IsNullOrWhiteSpace(username) && !string.IsNullOrWhiteSpace(password)) {
                 var account = _buttery.Load(username);
@@ -82,9 +98,9 @@ namespace butterystrava.Controllers {
             }
 
             return RedirectToAction("Login");
-        }
+        }*/
 
-        public RedirectToActionResult Password(string password) {
+        /*public RedirectToActionResult Password(string password) {
             var account = _buttery.Load(_username);
 
             var hash = HashLibrary.HashedPassword.New(password);
@@ -94,7 +110,7 @@ namespace butterystrava.Controllers {
             _buttery.Save(account);
 
             return RedirectToAction("Welcome");
-        }
+        }*/
 
         public RedirectToActionResult Code(string code) {
             // PRG back to home
@@ -136,25 +152,51 @@ namespace butterystrava.Controllers {
             return RedirectToAction("Welcome");
         }
 
-        public IActionResult Welcome() {
-            var username = _username;
-
-            if (string.IsNullOrWhiteSpace(username))
+        [Authorize]
+        public async Task<IActionResult> Welcome() {
+            var user = await GetCurrentUserAsync();
+            if (user == null) //if (string.IsNullOrWhiteSpace(username))
                 return RedirectToAction("Login");
 
+            var username = user.AthleteUsername; // _username
+
+
             ViewData["username"] = username;
-
-
-            var hash = HashLibrary.HashedPassword.New("moo");
-            ViewData["hash"] = hash.Hash;
-            ViewData["salt"] = hash.Salt;
-
-
             var account = _buttery.Load(username);
 
             return View(new IndexModel() {
                 Account = account,
             });
+        }
+
+                /// <summary>
+        /// Instructs the middleware to redirect to the Strava OAuth 2.0 user login screen.
+        /// After successful OAuth authentication the athletes profile response data is 
+        /// added to the current user identity.
+        /// </summary>
+        public IActionResult Connect()
+        {
+            /// The authenticationSchemes parameter must be set to "Strava".
+            return Challenge(new AuthenticationProperties { RedirectUri = "Strava/Connected" }, "Strava");
+        }
+
+        /// <summary>
+        /// Strava login callback. 
+        /// </summary>
+        public IActionResult Connected()
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
+        /// <summary>
+        /// Deletes the authentication cookie.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IActionResult> SignOut()
+        {
+            await HttpContext.SignOutAsync();
+
+            return RedirectToAction("Index", "Home");
         }
     }
 }

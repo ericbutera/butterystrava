@@ -1,5 +1,7 @@
+using butterystrava.Buttery;
+
 namespace butterystrava.Models {
     public class IndexModel {
-        public Account Account {get;set;}
+        public User Account {get;set;}
     }
 }

@@ -1,16 +1,8 @@
 using System;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
-namespace butterystrava.Models {
-
-    public class ButteryContext : DbContext {
-        public DbSet<Account> Accounts {get;set;}
-
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlite("Data Source=buttery.db");
-    }
-
-    public class Account {
+namespace butterystrava.Buttery {
+    public class User : IdentityUser {
         // this should probably be normalized at some point
         public int AccountId {get;set;}
         public string Token {get;set;} // access_token
@@ -26,5 +18,4 @@ namespace butterystrava.Models {
         public string Hash { get; set; }
         public string Salt {get;set;}
     }
-
 }

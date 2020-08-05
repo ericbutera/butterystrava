@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using butterystrava.Buttery;
 
 namespace butterystrava.Migrations
 {
     [DbContext(typeof(ButteryContext))]
-    partial class ButteryContextModelSnapshot : ModelSnapshot
+    [Migration("20200803001521_CreateIdentitySchema4")]
+    partial class CreateIdentitySchema4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

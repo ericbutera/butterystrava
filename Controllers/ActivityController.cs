@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http; // todo get rid of session
+using butterystrava.Buttery;
 
 namespace butterystrava.Controllers
 {
@@ -14,7 +15,7 @@ namespace butterystrava.Controllers
         private readonly Buttery.Buttery _buttery;
         //private readonly Account _account;
 
-        public ActivityController(Strava.Client client, Models.ButteryContext context) 
+        public ActivityController(Strava.Client client, ButteryContext context) 
         {
             _client = client;
             _buttery = new Buttery.Buttery(context);
